@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Shield, Eye, EyeOff, Users, Briefcase } from "lucide-react";
+import API from "../services/api.js";
+import toast from "react-hot-toast";
 
 export default function AuthPage() {
   const [params] = useSearchParams();
@@ -11,10 +13,39 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    navigate(role === "family" ? "/family/dashboard" : "/helper/dashboard");
-  };
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    if (isLogin) {
+      const res = await API.post("/auth/login", {
+        email: formData.email,
+        password: formData.password,
+      });
+
+      localStorage.setItem("token", res.data.token);
+      navigate(res.data.role === "family" ? "/family/dashboard" : "/helper/dashboard");
+    } else {
+      await API.post("/auth/register", {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role,
+      });
+
+      toast.success("Registration successful. Please login.");
+      setFormData({
+        name: "",
+        email: "",
+        password: ""
+      });
+      setIsLogin(true);
+    }
+  } catch (err) {
+    toast.error(err.response?.data?.error || "Something went wrong");
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-blue-50 flex items-center justify-center p-6">
