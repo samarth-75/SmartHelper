@@ -3,6 +3,8 @@ import Landing from "./pages/Landing";
 import FamilyDashboard from "./pages/family/Dashboard";
 import HelperDashboard from "./pages/helper/Dashboard";
 import AuthPage from "./pages/AuthPage";
+import DashboardLayout from "./components/DashboardLayout";
+import AllHelpers from "./pages/family/AllHelpers";
 
 export default function App() {
   return (
@@ -10,8 +12,41 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/auth" element={<AuthPage />} />
-        <Route path="/family/dashboard" element={<FamilyDashboard />} />
-        <Route path="/helper/dashboard" element={<HelperDashboard />} />
+
+        <Route
+          path="/family/dashboard"
+          element={
+            <DashboardLayout>
+              <FamilyDashboard />
+            </DashboardLayout>
+          }
+        />
+
+        <Route
+          path="/family/helpers"
+          element={
+            <DashboardLayout>
+              <AllHelpers />
+            </DashboardLayout>
+          }
+        />
+
+        <Route
+          path="/helper/dashboard"
+          element={
+            <DashboardLayout>
+              <HelperDashboard />
+            </DashboardLayout>
+          }
+        />
+        <Route
+          path="/helper/dashboard"
+          element={
+            <DashboardLayout>
+              <HelperDashboard />
+            </DashboardLayout>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
