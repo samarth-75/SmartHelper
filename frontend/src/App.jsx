@@ -5,49 +5,35 @@ import HelperDashboard from "./pages/helper/Dashboard";
 import AuthPage from "./pages/AuthPage";
 import DashboardLayout from "./components/DashboardLayout";
 import AllHelpers from "./pages/family/AllHelpers";
+import PostJob from "./pages/family/PostJob";
+import Attendance from "./pages/family/Attendance";
+import Payments from "./pages/family/Payments";
+import HelperJobs from "./pages/helper/Jobs";
+import CheckIn from "./pages/helper/CheckIn";
+import Earnings from "./pages/helper/Earnings";
+
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/auth" element={<AuthPage />} />
+  <Routes>
+    <Route path="/" element={<Landing />} />
+    <Route path="/auth" element={<AuthPage />} />
 
-        <Route
-          path="/family/dashboard"
-          element={
-            <DashboardLayout>
-              <FamilyDashboard />
-            </DashboardLayout>
-          }
-        />
+    {/* Family */}
+    <Route path="/family/dashboard" element={<DashboardLayout><FamilyDashboard/></DashboardLayout>} />
+    <Route path="/family/post-job" element={<DashboardLayout><PostJob/></DashboardLayout>} />
+    <Route path="/family/attendance" element={<DashboardLayout><Attendance/></DashboardLayout>} />
+    <Route path="/family/payments" element={<DashboardLayout><Payments/></DashboardLayout>} />
+    <Route path="/family/helpers" element={<DashboardLayout><AllHelpers/></DashboardLayout>} />
 
-        <Route
-          path="/family/helpers"
-          element={
-            <DashboardLayout>
-              <AllHelpers />
-            </DashboardLayout>
-          }
-        />
+    {/* Helper */}
+    <Route path="/helper/dashboard" element={<DashboardLayout><HelperDashboard/></DashboardLayout>} />
+    <Route path="/helper/jobs" element={<DashboardLayout><HelperJobs/></DashboardLayout>} />
+    <Route path="/helper/checkin" element={<DashboardLayout><CheckIn/></DashboardLayout>} />
+    <Route path="/helper/earnings" element={<DashboardLayout><Earnings/></DashboardLayout>} />
+  </Routes>
+</BrowserRouter>
 
-        <Route
-          path="/helper/dashboard"
-          element={
-            <DashboardLayout>
-              <HelperDashboard />
-            </DashboardLayout>
-          }
-        />
-        <Route
-          path="/helper/dashboard"
-          element={
-            <DashboardLayout>
-              <HelperDashboard />
-            </DashboardLayout>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
   );
 }

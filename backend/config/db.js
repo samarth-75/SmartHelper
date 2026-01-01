@@ -11,4 +11,22 @@ db.serialize(() => {
       role TEXT
     )
   `);
+
+  db.run(`
+CREATE TABLE IF NOT EXISTS jobs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT,
+  description TEXT,
+  location TEXT,
+  date TEXT,
+  time TEXT,
+  duration TEXT,
+  payPerHour TEXT,
+  category TEXT,
+  familyId INTEGER,
+  FOREIGN KEY (familyId) REFERENCES users(id)
+);
+
+`);
+
 });
