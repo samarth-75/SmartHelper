@@ -11,7 +11,8 @@ import Payments from "./pages/family/Payments";
 import HelperJobs from "./pages/helper/Jobs";
 import CheckIn from "./pages/helper/CheckIn";
 import Earnings from "./pages/helper/Earnings";
-
+import JobDetails from "./pages/helper/JobDetails";
+import Applications from "./pages/family/Applications";
 
 export default function App() {
   return (
@@ -32,6 +33,22 @@ export default function App() {
     <Route path="/helper/jobs" element={<DashboardLayout><HelperJobs/></DashboardLayout>} />
     <Route path="/helper/checkin" element={<DashboardLayout><CheckIn/></DashboardLayout>} />
     <Route path="/helper/earnings" element={<DashboardLayout><Earnings/></DashboardLayout>} />
+    <Route
+      path="/helper/jobs/:id"
+      element={
+        <DashboardLayout>
+          <JobDetails />
+        </DashboardLayout>
+      }
+    />
+    <Route
+      path="/family/applications"
+      element={
+        <DashboardLayout>
+          <Applications />
+        </DashboardLayout>
+      }
+    />
   </Routes>
 </BrowserRouter>
 

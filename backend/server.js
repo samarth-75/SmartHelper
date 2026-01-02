@@ -5,6 +5,7 @@ import "./config/db.js";
 import dotenv from "dotenv";
 import testRoutes from "./routes/testRoutes.js";
 import jobRoutes from "./routes/jobRoutes.js";
+import applicationRoutes from "./routes/applicationRoutes.js";
 
 dotenv.config();
 
@@ -16,5 +17,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/test", testRoutes);
 app.use("/api/jobs", jobRoutes);
+app.use("/api/applications", applicationRoutes);
+
 
 app.listen(5000, () => console.log("Backend running on port 5000"));
