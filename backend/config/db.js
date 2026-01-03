@@ -29,11 +29,15 @@ db.serialize(() => {
 `);
 
   db.run(`
-    CREATE TABLE IF NOT EXISTS applications (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      jobId INTEGER,
-      helperId INTEGER,
-      status TEXT DEFAULT 'pending'
-    );
+  CREATE TABLE IF NOT EXISTS applications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    jobId INTEGER,
+    helperId INTEGER,
+    phone TEXT NOT NULL,
+    address TEXT NOT NULL,
+    message TEXT,
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(jobId, helperId)
+  )
 `);
 });
