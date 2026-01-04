@@ -40,4 +40,26 @@ db.serialize(() => {
     UNIQUE(jobId, helperId)
   )
 `);
+
+  // Add columns to support accept/reject simple workflow. ALTER statements are run
+  // on startup and errors (if column already exists) are ignored.
+  db.run(`ALTER TABLE applications ADD COLUMN status TEXT DEFAULT 'pending'`, (err) => {});
+  db.run(`ALTER TABLE applications ADD COLUMN decidedAt TEXT`, (err) => {});
+  db.run(`ALTER TABLE jobs ADD COLUMN assignedHelperId INTEGER`, (err) => {});
+  db.run(`ALTER TABLE jobs ADD COLUMN status TEXT DEFAULT 'open'`, (err) => {});
+
+  // Add user profile fields
+  db.run(`ALTER TABLE users ADD COLUMN avatar TEXT`, (err) => {});
+  db.run(`ALTER TABLE users ADD COLUMN phone TEXT`, (err) => {});
+  db.run(`ALTER TABLE users ADD COLUMN address TEXT`, (err) => {});
+  db.run(`ALTER TABLE users ADD COLUMN bio TEXT`, (err) => {});
+
+  // Initialize existing rows to defaults when columns were added in older DBs
+  db.run(`UPDATE applications SET status = 'pending' WHERE status IS NULL`, (err) => {});
+  db.run(`UPDATE jobs SET status = 'open' WHERE status IS NULL`, (err) => {});
+  db.run(`UPDATE users SET avatar = NULL WHERE avatar IS NULL`, (err) => {});
+  db.run(`UPDATE users SET phone = NULL WHERE phone IS NULL`, (err) => {});
+  db.run(`UPDATE users SET address = NULL WHERE address IS NULL`, (err) => {});
+  db.run(`UPDATE users SET bio = NULL WHERE bio IS NULL`, (err) => {});
+
 });

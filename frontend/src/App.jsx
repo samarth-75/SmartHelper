@@ -13,6 +13,8 @@ import CheckIn from "./pages/helper/CheckIn";
 import Earnings from "./pages/helper/Earnings";
 import JobDetails from "./pages/helper/JobDetails";
 import Applications from "./pages/family/Applications";
+import FamilyProfile from "./pages/family/Profile";
+import HelperProfile from "./pages/helper/Profile";
 
 export default function App() {
   return (
@@ -27,9 +29,11 @@ export default function App() {
     <Route path="/family/attendance" element={<DashboardLayout><Attendance/></DashboardLayout>} />
     <Route path="/family/payments" element={<DashboardLayout><Payments/></DashboardLayout>} />
     <Route path="/family/helpers" element={<DashboardLayout><AllHelpers/></DashboardLayout>} />
+    <Route path="/family/profile" element={<DashboardLayout><FamilyProfile /></DashboardLayout>} />
 
     {/* Helper */}
     <Route path="/helper/dashboard" element={<DashboardLayout><HelperDashboard/></DashboardLayout>} />
+    <Route path="/helper/profile" element={<DashboardLayout><HelperProfile /></DashboardLayout>} />
     <Route path="/helper/jobs" element={<DashboardLayout><HelperJobs/></DashboardLayout>} />
     <Route path="/helper/checkin" element={<DashboardLayout><CheckIn/></DashboardLayout>} />
     <Route path="/helper/earnings" element={<DashboardLayout><Earnings/></DashboardLayout>} />

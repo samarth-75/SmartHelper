@@ -5,6 +5,7 @@ export default function Sidebar({ role }) {
   const links = role === "family"
     ? [
         { to: "/family/dashboard", icon: <Home />, label: "Dashboard" },
+        { to: "/family/profile", icon: <Camera />, label: "Profile" },
         { to: "/family/post-job", icon: <Briefcase />, label: "Post Job" },
         { to: "/family/attendance", icon: <Camera />, label: "Attendance" },
         { to: "/family/payments", icon: <DollarSign />, label: "Payments" },
@@ -12,6 +13,7 @@ export default function Sidebar({ role }) {
       ]
     : [
         { to: "/helper/dashboard", icon: <Home />, label: "Dashboard" },
+        { to: "/helper/profile", icon: <Camera />, label: "Profile" },
         { to: "/helper/jobs", icon: <Briefcase />, label: "Jobs" },
         { to: "/helper/checkin", icon: <Camera />, label: "Check-In" },
         { to: "/helper/earnings", icon: <DollarSign />, label: "Earnings" },
