@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
+  User,
   PlusCircle,
   FileText,
   Clock,
@@ -25,6 +26,7 @@ export default function DashboardLayout({ children }) {
 
   const familyMenuItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/family/dashboard" },
+    { icon: User, label: "Profile", path: "/family/profile" },
     { icon: PlusCircle, label: "Post Job", path: "/family/post-job" },
     { icon: FileText, label: "Applications", path: "/family/applications" },
     { icon: Clock, label: "Attendance", path: "/family/attendance" },
@@ -34,6 +36,7 @@ export default function DashboardLayout({ children }) {
 
   const helperMenuItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/helper/dashboard" },
+    { icon: User, label: "Profile", path: "/helper/profile" },
     { icon: FileText, label: "Browse Jobs", path: "/helper/jobs" },
     { icon: Clock, label: "Attendance", path: "/helper/attendance" },
     { icon: DollarSign, label: "Earnings", path: "/helper/earnings" },
