@@ -14,7 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function DashboardLayout({ children }) {
   const { user, logout } = useApp();
@@ -46,9 +46,16 @@ export default function DashboardLayout({ children }) {
   const menuItems = isFamilyDashboard ? familyMenuItems : helperMenuItems;
 
   const handleLogout = () => {
+    // stop any active camera streams in other components before logout
+    try { window.dispatchEvent(new Event('stopCamera')); } catch (e) {}
     logout();
     navigate("/");
   };
+
+  // dispatch stopCamera on any route change to ensure cameras are stopped
+  useEffect(() => {
+    try { window.dispatchEvent(new Event('stopCamera')); } catch (e) {}
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-gray-50">

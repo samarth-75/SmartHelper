@@ -62,4 +62,32 @@ db.serialize(() => {
   db.run(`UPDATE users SET address = NULL WHERE address IS NULL`, (err) => {});
   db.run(`UPDATE users SET bio = NULL WHERE bio IS NULL`, (err) => {});
 
+  // Faces table stores a helper's registered face image/template (for demo we store image data)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS faces (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      helperId INTEGER UNIQUE,
+      template TEXT,
+      createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (helperId) REFERENCES users(id)
+    )
+  `);
+
+  // Attendance records
+  db.run(`
+    CREATE TABLE IF NOT EXISTS attendance (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      helperId INTEGER,
+      jobId INTEGER,
+      familyId INTEGER,
+      action TEXT,
+      lat REAL,
+      lon REAL,
+      createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (helperId) REFERENCES users(id),
+      FOREIGN KEY (jobId) REFERENCES jobs(id),
+      FOREIGN KEY (familyId) REFERENCES users(id)
+    )
+  `);
+
 });

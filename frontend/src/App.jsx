@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import Landing from "./pages/Landing";
 import FamilyDashboard from "./pages/family/Dashboard";
 import HelperDashboard from "./pages/helper/Dashboard";
@@ -11,14 +12,33 @@ import Payments from "./pages/family/Payments";
 import HelperJobs from "./pages/helper/Jobs";
 import CheckIn from "./pages/helper/CheckIn";
 import Earnings from "./pages/helper/Earnings";
+import HelperAttendance from "./pages/helper/Attendance";
 import JobDetails from "./pages/helper/JobDetails";
 import Applications from "./pages/family/Applications";
 import FamilyProfile from "./pages/family/Profile";
 import HelperProfile from "./pages/helper/Profile";
 
+function RouteStopper() {
+  const location = useLocation();
+  useEffect(() => {
+    try { window.dispatchEvent(new Event('stopCamera')); } catch (e) {}
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const onUnload = () => {
+      try { window.dispatchEvent(new Event('stopCamera')); } catch (e) {}
+    };
+    window.addEventListener('beforeunload', onUnload);
+    return () => window.removeEventListener('beforeunload', onUnload);
+  }, []);
+
+  return null;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
+      <RouteStopper />
   <Routes>
     <Route path="/" element={<Landing />} />
     <Route path="/auth" element={<AuthPage />} />
@@ -34,6 +54,7 @@ export default function App() {
     {/* Helper */}
     <Route path="/helper/dashboard" element={<DashboardLayout><HelperDashboard/></DashboardLayout>} />
     <Route path="/helper/profile" element={<DashboardLayout><HelperProfile /></DashboardLayout>} />
+    <Route path="/helper/attendance" element={<DashboardLayout><HelperAttendance/></DashboardLayout>} />
     <Route path="/helper/jobs" element={<DashboardLayout><HelperJobs/></DashboardLayout>} />
     <Route path="/helper/checkin" element={<DashboardLayout><CheckIn/></DashboardLayout>} />
     <Route path="/helper/earnings" element={<DashboardLayout><Earnings/></DashboardLayout>} />
