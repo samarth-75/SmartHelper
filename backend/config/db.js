@@ -50,6 +50,8 @@ db.serialize(() => {
 
   // Add attendance.paymentId to link attendance rows to payments
   db.run(`ALTER TABLE attendance ADD COLUMN paymentId INTEGER`, (err) => {});
+  // Add payments.receivedAt to track when helper confirmed receipt
+  db.run(`ALTER TABLE payments ADD COLUMN receivedAt TEXT`, (err) => {});
 
   // Add user profile fields
   db.run(`ALTER TABLE users ADD COLUMN avatar TEXT`, (err) => {});
@@ -107,6 +109,23 @@ db.serialize(() => {
       FOREIGN KEY (familyId) REFERENCES users(id),
       FOREIGN KEY (helperId) REFERENCES users(id),
       FOREIGN KEY (jobId) REFERENCES jobs(id)
+    )
+  `);
+
+  // Reviews table (one review per job enforced by UNIQUE(jobId))
+  db.run(`
+    CREATE TABLE IF NOT EXISTS reviews (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      jobId INTEGER,
+      familyId INTEGER,
+      helperId INTEGER,
+      rating INTEGER,
+      comment TEXT,
+      createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (jobId) REFERENCES jobs(id),
+      FOREIGN KEY (familyId) REFERENCES users(id),
+      FOREIGN KEY (helperId) REFERENCES users(id),
+      UNIQUE(jobId)
     )
   `);
 

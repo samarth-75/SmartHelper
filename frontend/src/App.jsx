@@ -6,6 +6,8 @@ import HelperDashboard from "./pages/helper/Dashboard";
 import AuthPage from "./pages/AuthPage";
 import DashboardLayout from "./components/DashboardLayout";
 import AllHelpers from "./pages/family/AllHelpers";
+import AssignedHelpers from "./pages/family/AssignedHelpers";
+import RecommendedHelpers from "./pages/family/RecommendedHelpers";
 import PostJob from "./pages/family/PostJob";
 import Attendance from "./pages/family/Attendance";
 import Payments from "./pages/family/Payments";
@@ -16,7 +18,9 @@ import HelperAttendance from "./pages/helper/Attendance";
 import JobDetails from "./pages/helper/JobDetails";
 import Applications from "./pages/family/Applications";
 import FamilyProfile from "./pages/family/Profile";
+import Feedback from "./pages/family/Feedback";
 import HelperProfile from "./pages/helper/Profile";
+import Reviews from "./pages/helper/Reviews";
 
 function RouteStopper() {
   const location = useLocation();
@@ -49,6 +53,8 @@ export default function App() {
     <Route path="/family/attendance" element={<DashboardLayout><Attendance/></DashboardLayout>} />
     <Route path="/family/payments" element={<DashboardLayout><Payments/></DashboardLayout>} />
     <Route path="/family/helpers" element={<DashboardLayout><AllHelpers/></DashboardLayout>} />
+    <Route path="/family/assigned-helpers" element={<DashboardLayout><AssignedHelpers/></DashboardLayout>} />
+    <Route path="/family/recommended-helpers" element={<DashboardLayout><RecommendedHelpers/></DashboardLayout>} />
     <Route path="/family/profile" element={<DashboardLayout><FamilyProfile /></DashboardLayout>} />
 
     {/* Helper */}
@@ -58,6 +64,7 @@ export default function App() {
     <Route path="/helper/jobs" element={<DashboardLayout><HelperJobs/></DashboardLayout>} />
     <Route path="/helper/checkin" element={<DashboardLayout><CheckIn/></DashboardLayout>} />
     <Route path="/helper/earnings" element={<DashboardLayout><Earnings/></DashboardLayout>} />
+    <Route path="/helper/reviews" element={<DashboardLayout><Reviews/></DashboardLayout>} />
     <Route
       path="/helper/jobs/:id"
       element={
@@ -74,6 +81,7 @@ export default function App() {
         </DashboardLayout>
       }
     />
+    <Route path="/family/feedback" element={<DashboardLayout><Feedback/></DashboardLayout>} />
   </Routes>
 </BrowserRouter>
 

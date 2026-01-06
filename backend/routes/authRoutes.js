@@ -83,4 +83,24 @@ router.get("/helper/assigned-jobs", protect, (req, res) => {
   });
 });
 
+// Family: list helpers (for SmartMatch recommendations)
+router.get('/helpers', protect, (req, res) => {
+  if (req.user.role !== 'family') return res.status(403).json({ error: 'Only families can view helpers' });
+  const q = `
+    SELECT
+      u.id,
+      u.name,
+      u.avatar,
+      u.bio,
+      COALESCE((SELECT ROUND(AVG(rating),1) FROM reviews r WHERE r.helperId = u.id), 0) AS avgRating
+    FROM users u
+    WHERE u.role = 'helper'
+    ORDER BY avgRating DESC, u.name ASC
+  `;
+  db.all(q, [], (err, rows) => {
+    if (err) return res.status(500).json(err);
+    res.json(rows);
+  });
+});
+
 export default router;

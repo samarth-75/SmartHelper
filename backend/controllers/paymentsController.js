@@ -118,6 +118,8 @@ export const getFamilyPayments = (req, res) => {
   if (req.user.role !== "family")
     return res.status(403).json({ error: "Only families can view payments" });
 
+  console.debug(`getFamilyPayments called for userId=${req.user.id}`);
+
   // 1) Get payment history from payments table
   db.all(
     `SELECT p.*, u.name as helperName, j.title as jobTitle, j.date as jobDate FROM payments p
@@ -128,11 +130,15 @@ export const getFamilyPayments = (req, res) => {
     [req.user.id],
     (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
+      console.debug('payments rows count:', rows ? rows.length : 0, 'for user', req.user.id);
       const paid = rows.filter((r) => r.status === "paid");
+      console.debug('paid rows count:', paid.length);
 
       // 2) Compute pending payments by aggregating unpaid attendance rows (group by helperId+jobId)
       db.all(`SELECT a.helperId, a.jobId, u.name as helperName, j.title as jobTitle, j.date as jobDate, j.payPerHour FROM attendance a LEFT JOIN users u ON a.helperId = u.id LEFT JOIN jobs j ON a.jobId = j.id WHERE a.familyId = ? AND a.paymentId IS NULL ORDER BY a.helperId, a.jobId, a.createdAt ASC`, [req.user.id], (err, unpaidRows) => {
         if (err) return res.status(500).json({ error: err.message });
+
+        console.debug('unpaid attendance rows count:', unpaidRows ? unpaidRows.length : 0);
 
         const groups = {};
         for (const r of unpaidRows) {
@@ -158,8 +164,86 @@ export const getFamilyPayments = (req, res) => {
           };
         });
 
+        console.debug('returning pending count:', pending.length, 'paid count:', paid.length);
         res.json({ pending, paid });
       });
     }
   );
+};
+
+// Helper: get earned (paid) and pending amounts for the logged-in helper
+export const getHelperPayments = (req, res) => {
+  if (req.user.role !== "helper")
+    return res.status(403).json({ error: "Only helpers can view earnings" });
+
+  // Paid payments where helperId = logged-in helper
+  db.all(
+    `SELECT p.*, u.name as familyName, j.title as jobTitle, j.date as jobDate FROM payments p
+     LEFT JOIN users u ON p.familyId = u.id
+     LEFT JOIN jobs j ON p.jobId = j.id
+     WHERE p.helperId = ?
+     ORDER BY p.createdAt DESC`,
+    [req.user.id],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      const paid = rows || [];
+
+      // Pending: unpaid attendance rows for this helper (group by jobId)
+      db.all(
+        `SELECT a.helperId, a.jobId, a.familyId, u.name as familyName, j.title as jobTitle, j.date as jobDate, j.payPerHour FROM attendance a LEFT JOIN users u ON a.familyId = u.id LEFT JOIN jobs j ON a.jobId = j.id WHERE a.helperId = ? AND a.paymentId IS NULL ORDER BY a.jobId, a.createdAt ASC`,
+        [req.user.id],
+        (err, unpaidRows) => {
+          if (err) return res.status(500).json({ error: err.message });
+
+          const groups = {};
+          for (const r of unpaidRows) {
+            const key = `${r.jobId}`;
+            groups[key] = groups[key] || { jobId: r.jobId, familyName: r.familyName, jobTitle: r.jobTitle, jobDate: r.jobDate, rate: Number(r.payPerHour) || 0, rows: [] };
+            groups[key].rows.push(r);
+          }
+
+          const pending = Object.values(groups).map((g) => {
+            const seconds = computeWorkSeconds(g.rows);
+            const hours = Math.round((secsToHours(seconds) + Number.EPSILON) * 100) / 100;
+            const amount = Math.round(hours * (g.rate || 0));
+            return {
+              jobId: g.jobId,
+              familyName: g.familyName,
+              jobTitle: g.jobTitle,
+              jobDate: g.jobDate,
+              hoursWorked: hours,
+              rate: g.rate,
+              amount,
+              status: 'pending'
+            };
+          });
+
+          res.json({ pending, paid });
+        }
+      );
+    }
+  );
+};
+
+// Helper: mark a paid payment as received (only the helper assigned to the payment)
+export const receivePayment = (req, res) => {
+  if (req.user.role !== "helper")
+    return res.status(403).json({ error: "Only helpers can mark payments as received" });
+
+  const paymentId = req.params.id;
+  db.get("SELECT * FROM payments WHERE id = ?", [paymentId], (err, payment) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!payment) return res.status(404).json({ error: "Payment not found" });
+    if (payment.helperId !== req.user.id) return res.status(403).json({ error: "Not authorized" });
+    if (payment.status !== 'paid') return res.status(400).json({ error: "Only paid payments can be marked as received" });
+
+    const receivedAt = new Date().toISOString();
+    db.run("UPDATE payments SET status = 'received', receivedAt = ? WHERE id = ?", [receivedAt, paymentId], function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      db.get("SELECT * FROM payments WHERE id = ?", [paymentId], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, payment: row });
+      });
+    });
+  });
 };

@@ -17,8 +17,19 @@ export default function Payments() {
     try {
       setLoading(true);
       const data = await fetchFamilyPayments();
-      setPayments(data);
+      console.debug('fetchFamilyPayments response:', data);
+
+      // Support both the expected { pending, paid } shape and a fallback array of paid records
+      if (Array.isArray(data)) {
+        setPayments({ pending: [], paid: data });
+      } else if (data && (Array.isArray(data.pending) || Array.isArray(data.paid))) {
+        setPayments({ pending: data.pending || [], paid: data.paid || [] });
+      } else {
+        console.warn('Unexpected payments response shape', data);
+        setPayments({ pending: [], paid: [] });
+      }
     } catch (err) {
+      console.error('Failed to fetch family payments', err);
       toast.error(err?.response?.data?.error || "Failed to load payments");
     } finally {
       setLoading(false);
