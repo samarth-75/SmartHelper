@@ -1,34 +1,83 @@
+import React, { useEffect, useState } from "react";
 import Sidebar from "../../components/Sidebar";
+import PaymentSummary from "../../components/PaymentSummary";
+import PaymentCard from "../../components/PaymentCard";
+import PaymentHistory from "../../components/PaymentHistory";
+import ConfirmPaymentModal from "../../components/ConfirmPaymentModal";
+import { fetchFamilyPayments, payPayment, createPayment } from "../../services/api";
+import toast from "react-hot-toast";
 
 export default function Payments() {
+  const [loading, setLoading] = useState(false);
+  const [payments, setPayments] = useState({ pending: [], paid: [] });
+  const [selected, setSelected] = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const load = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchFamilyPayments();
+      setPayments(data);
+    } catch (err) {
+      toast.error(err?.response?.data?.error || "Failed to load payments");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const onPayClick = (p) => {
+    setSelected(p);
+    setConfirmOpen(true);
+  };
+
+  const confirmPay = async () => {
+    try {
+      // If a pre-existing payment id exists, use legacy pay endpoint
+      if (selected?.id) {
+        await payPayment(selected.id);
+      } else {
+        // Create payment by aggregating unpaid attendance rows for this helper/job
+        await createPayment({ jobId: selected.jobId, helperId: selected.helperId });
+      }
+      toast.success("Payment successful");
+      setConfirmOpen(false);
+      setSelected(null);
+      load();
+    } catch (err) {
+      toast.error(err?.response?.data?.error || "Payment failed");
+    }
+  };
+
   return (
     <div className="flex">
-      <Sidebar role="family" />
       <div className="p-8 w-full bg-gray-100 min-h-screen">
         <h2 className="text-3xl font-bold mb-6">Payments</h2>
 
-        <div className="bg-white p-6 rounded-xl shadow">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b text-left">
-                <th>Helper</th>
-                <th>Date</th>
-                <th>Hours</th>
-                <th>Amount</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Asha More</td>
-                <td>27-12-2025</td>
-                <td>6</td>
-                <td>₹900</td>
-                <td className="text-green-600 font-semibold">Paid</td>
-              </tr>
-            </tbody>
-          </table>
+        <PaymentSummary pending={payments.pending} paid={payments.paid} />
+
+        <div className="mb-6">
+          <h3 className="text-xl font-semibold mb-4">Pending Payments</h3>
+
+          {loading ? (
+            <div className="space-y-3">
+              <div className="h-20 bg-gray-200 rounded animate-pulse" />
+              <div className="h-20 bg-gray-200 rounded animate-pulse" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-4">
+              {payments.pending.length === 0 && <div className="text-gray-500">No pending payments</div>}
+              {payments.pending.map((p) => (
+                <PaymentCard key={p.id || `${p.helperId}-${p.jobId}` } payment={p} onPay={() => onPayClick(p)} />
+              ))}
+            </div>
+          )}
         </div>
+
+        <PaymentHistory paid={payments.paid} />
+
+        <ConfirmPaymentModal open={confirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={confirmPay} payment={selected || {}} />
       </div>
     </div>
   );

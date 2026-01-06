@@ -77,7 +77,7 @@ router.post('/scan', protect, (req, res) => {
 // Helper: get own attendance
 router.get('/helper', protect, (req, res) => {
   if (req.user.role !== 'helper') return res.status(403).json({ error: 'Only helpers' });
-  db.all(`SELECT * FROM attendance WHERE helperId = ? ORDER BY createdAt DESC`, [req.user.id], (err, rows) => {
+  db.all(`SELECT a.*, j.title as jobTitle FROM attendance a LEFT JOIN jobs j ON a.jobId = j.id WHERE a.helperId = ? ORDER BY a.createdAt DESC`, [req.user.id], (err, rows) => {
     if (err) return res.status(500).json(err);
     res.json(rows);
   });

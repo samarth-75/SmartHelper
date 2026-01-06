@@ -7,6 +7,7 @@ import testRoutes from "./routes/testRoutes.js";
 import jobRoutes from "./routes/jobRoutes.js";
 import applicationRoutes from "./routes/applicationRoutes.js";
 import attendanceRoutes from "./routes/attendanceRoutes.js";
+import paymentsRoutes from "./routes/paymentsRoutes.js";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use("/api/test", testRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/attendance", attendanceRoutes);
+app.use("/api/payments", paymentsRoutes);
 
 
 app.listen(5000, () => console.log("Backend running on port 5000"));

@@ -12,11 +12,24 @@ export default function AttendancePage() {
   const [checkedIn, setCheckedIn] = useState(false);
   const [faceRegistered, setFaceRegistered] = useState(false);
   const [attendanceHistory, setAttendanceHistory] = useState([]);
+  const [assignedJobs, setAssignedJobs] = useState([]);
+  const [selectedJobId, setSelectedJobId] = useState(null);
 
   useEffect(() => {
     checkFace();
     fetchHistory();
+    fetchAssignedJobs();
   }, []);
+
+  const fetchAssignedJobs = async () => {
+    try {
+      const res = await API.get('/auth/helper/assigned-jobs');
+      setAssignedJobs(res.data || []);
+      if (res.data && res.data.length) setSelectedJobId(res.data[0].jobId);
+    } catch (err) {
+      console.error('Failed to fetch assigned jobs', err);
+    }
+  }; 
 
   useEffect(() => {
     if (cameraOn) {
@@ -168,7 +181,7 @@ export default function AttendancePage() {
     // get location
     navigator.geolocation.getCurrentPosition(async (pos) => {
       try {
-        const payload = { action, image, lat: pos.coords.latitude, lon: pos.coords.longitude };
+        const payload = { action, image, lat: pos.coords.latitude, lon: pos.coords.longitude, jobId: selectedJobId || null };
         const res = await API.post('/attendance/scan', payload);
         setVerified(true);
         await fetchHistory();
@@ -185,7 +198,7 @@ export default function AttendancePage() {
       alert('Location access is required to mark attendance');
       setScanning(false);
     });
-  };
+  }; 
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -245,6 +258,16 @@ export default function AttendancePage() {
             </div>
           </div>
 
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-600 mb-2">Job</label>
+            <select value={selectedJobId || ''} onChange={(e) => setSelectedJobId(e.target.value ? Number(e.target.value) : null)} className="w-full p-3 border rounded mb-4">
+              <option value="">No job / Not assigned</option>
+              {assignedJobs.map((j) => (
+                <option key={j.jobId} value={j.jobId}>{j.title} {j.date ? `• ${j.date}` : ''}</option>
+              ))}
+            </select>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             {!faceRegistered ? (
               <button onClick={handleRegister} disabled={scanning} className="py-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white font-medium hover:shadow-lg transition-all">Register Face</button>
@@ -254,7 +277,7 @@ export default function AttendancePage() {
                 <button onClick={() => handleScan('check-out')} disabled={scanning || !checkedIn} className="py-4 rounded-xl bg-gradient-to-r from-blue-500 to-teal-500 text-white font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">Check Out</button>
               </>
             )}
-          </div>
+          </div> 
 
           <div className="mt-4 text-center">
             <button onClick={() => setCameraOn((p) => !p)} className="py-3 px-6 rounded-xl bg-gray-800 text-white font-medium hover:shadow-lg transition-all">
@@ -281,6 +304,7 @@ export default function AttendancePage() {
                 </div>
                 <div className="flex items-center gap-4 text-sm text-gray-600">
                   <span>Location: {record.lat ? `${record.lat.toFixed(4)}, ${record.lon.toFixed(4)}` : 'Unknown'}</span>
+                  <span>Job: {record.jobTitle || (record.jobId ? `#${record.jobId}` : '—')}</span>
                 </div>
                 <div className="text-sm text-gray-600 mt-2">At: {new Date(record.createdAt).toLocaleString()}</div>
               </div>

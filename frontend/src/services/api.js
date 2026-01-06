@@ -8,4 +8,8 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
+export const fetchFamilyPayments = () => API.get("/payments/family").then((res) => res.data);
+export const payPayment = (paymentId) => API.post("/payments", { paymentId }).then((res) => res.data);
+export const createPayment = (payload) => API.post("/payments", payload).then((res) => res.data);
+
 export default API;
