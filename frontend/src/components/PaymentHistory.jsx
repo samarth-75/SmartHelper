@@ -30,4 +30,4 @@ export default function PaymentHistory({ paid = [] }) {
       </table>
     </div>
   );
-}
+} 

@@ -118,8 +118,6 @@ export const getFamilyPayments = (req, res) => {
   if (req.user.role !== "family")
     return res.status(403).json({ error: "Only families can view payments" });
 
-  console.debug(`getFamilyPayments called for userId=${req.user.id}`);
-
   // 1) Get payment history from payments table
   db.all(
     `SELECT p.*, u.name as helperName, j.title as jobTitle, j.date as jobDate FROM payments p
@@ -130,15 +128,11 @@ export const getFamilyPayments = (req, res) => {
     [req.user.id],
     (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
-      console.debug('payments rows count:', rows ? rows.length : 0, 'for user', req.user.id);
       const paid = rows.filter((r) => r.status === "paid");
-      console.debug('paid rows count:', paid.length);
 
       // 2) Compute pending payments by aggregating unpaid attendance rows (group by helperId+jobId)
       db.all(`SELECT a.helperId, a.jobId, u.name as helperName, j.title as jobTitle, j.date as jobDate, j.payPerHour FROM attendance a LEFT JOIN users u ON a.helperId = u.id LEFT JOIN jobs j ON a.jobId = j.id WHERE a.familyId = ? AND a.paymentId IS NULL ORDER BY a.helperId, a.jobId, a.createdAt ASC`, [req.user.id], (err, unpaidRows) => {
         if (err) return res.status(500).json({ error: err.message });
-
-        console.debug('unpaid attendance rows count:', unpaidRows ? unpaidRows.length : 0);
 
         const groups = {};
         for (const r of unpaidRows) {
@@ -164,7 +158,6 @@ export const getFamilyPayments = (req, res) => {
           };
         });
 
-        console.debug('returning pending count:', pending.length, 'paid count:', paid.length);
         res.json({ pending, paid });
       });
     }
