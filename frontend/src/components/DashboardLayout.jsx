@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
+import { getChatbaseToken } from "../services/api";
 import { useState, useEffect } from "react";
 
 export default function DashboardLayout({ children }) {
@@ -56,6 +57,67 @@ export default function DashboardLayout({ children }) {
   useEffect(() => {
     try { window.dispatchEvent(new Event('stopCamera')); } catch (e) {}
   }, [location.pathname]);
+
+  // When a user is present, request a short-lived Chatbase identity token and identify the widget
+  useEffect(() => {
+    if (!user) return;
+    let mounted = true;
+    let pollTimer = null;
+
+    const identifyOnce = (cbToken) => {
+      if (!cbToken) return;
+      try {
+        console.debug('Attempting Chatbase identify', { cbTokenPresent: !!cbToken });
+        // Call immediately - the proxy will queue this until the embed loads
+        window.chatbase?.('identify', { token: cbToken });
+      } catch (e) {
+        console.error('Chatbase identify error', e);
+      }
+    };
+
+    const identify = async () => {
+      try {
+        const res = await getChatbaseToken();
+        const cbToken = res?.token;
+        if (!mounted) return;
+        if (!cbToken) {
+          console.warn('No chatbase token returned from server');
+          return;
+        }
+
+        identifyOnce(cbToken);
+
+        // If embed is not initialized yet, poll until it is and identify again to ensure UI registers the user
+        try {
+          const state = window.chatbase && window.chatbase('getState');
+          let tries = 0;
+          if (state !== 'initialized') {
+            pollTimer = setInterval(() => {
+              try {
+                const s = window.chatbase && window.chatbase('getState');
+                if (s === 'initialized') {
+                  identifyOnce(cbToken);
+                  clearInterval(pollTimer);
+                }
+                if (++tries > 20) { // stop after ~5s
+                  clearInterval(pollTimer);
+                }
+              } catch (e) {
+                // ignore transient errors
+              }
+            }, 250);
+          }
+        } catch (e) {
+          // ignore
+        }
+      } catch (err) {
+        console.error('Chatbase identify failed', err);
+      }
+    };
+
+    identify();
+    return () => { mounted = false; if (pollTimer) clearInterval(pollTimer); };
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-gray-50">

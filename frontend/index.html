@@ -9,5 +9,30 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Chatbase widget (replace YOUR_EMBED_ID with your Chatbase embed id).
+         Keep secret key on the server only (CHATBOT_IDENTITY_SECRET). -->
+    <script>
+    (function(){
+      if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}
+      const EMBED_ID = "tMC2J6Hnt_DgxNliAEkPd"; // <-- replace this with your real embed id
+      const onLoad=function(){
+        if (EMBED_ID === 'YOUR_EMBED_ID') {
+          console.warn('Chatbase embed id is not set. Replace "YOUR_EMBED_ID" in frontend/index.html with your embed id to display the widget. Skipping script injection.');
+          // mark state so code can detect that the widget won't be available
+          window.chatbase && window.chatbase('setUnavailable', { reason: 'embed_id_missing' });
+          return;
+        }
+        const script=document.createElement("script");
+        script.src="https://www.chatbase.co/embed.min.js";
+        script.id=EMBED_ID;
+        script.domain="www.chatbase.co";
+        script.onload = function(){console.log('Chatbase embed script loaded');};
+        script.onerror = function(e){console.error('Failed to load Chatbase embed script', e);};
+        document.body.appendChild(script);
+      };
+      if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}
+    })();
+    </script>
   </body>
 </html>

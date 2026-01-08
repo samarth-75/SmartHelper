@@ -29,4 +29,7 @@ export const getHelperAssignedJobs = () => API.get('/auth/helper/assigned-jobs')
 // Helper: their applications (array of jobIds)
 export const getHelperApplications = () => API.get('/applications/helper').then((res) => res.data);
 
+// Chatbase: obtain a short-lived identity token for the currently authenticated user
+export const getChatbaseToken = () => API.get('/auth/chatbase-token').then((res) => res.data);
+
 export default API;

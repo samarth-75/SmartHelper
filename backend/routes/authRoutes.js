@@ -1,5 +1,5 @@
 import express from "express";
-import { register, login } from "../controllers/authController.js";
+import { register, login, chatbaseToken } from "../controllers/authController.js";
 import { protect } from "../middleware/auth.js";
 import { db } from "../config/db.js";
 
@@ -8,6 +8,8 @@ const router = express.Router();
 
 router.post("/register", register);
 router.post("/login", login);
+// Return a short-lived Chatbase identity token for the logged in user
+router.get("/chatbase-token", protect, chatbaseToken);
 
 // Return full profile from DB (not only token contents)
 router.get("/profile", protect, (req, res) => {
