@@ -129,108 +129,30 @@ db.serialize(() => {
     )
   `);
 
-  // Seed sample payments only if none exist
-  db.get("SELECT COUNT(*) as count FROM payments", (err, row) => {
-    if (err) return;
-    if (row.count === 0) {
-      // Hash passwords for seeded users using dynamic import (ESM-safe)
-      import('bcryptjs').then((bcrypt) => {
-        const hashed = bcrypt.default.hashSync('password', 10);
+  // Posts table for helpers' work posts
+  db.run(`
+    CREATE TABLE IF NOT EXISTS posts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      authorId INTEGER,
+      description TEXT,
+      imageUrl TEXT,
+      createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (authorId) REFERENCES users(id)
+    )
+  `);
 
-        db.run(
-          "INSERT OR IGNORE INTO users (name,email,password,role) VALUES (?,?,?,?)",
-          ["Demo Family", "family@example.com", hashed, "family"]
-        );
-        db.run(
-          "INSERT OR IGNORE INTO users (name,email,password,role) VALUES (?,?,?,?)",
-          ["Maria", "maria@example.com", hashed, "helper"]
-        );
-
-        // Ensure password is set to hashed value for those emails (covers existing rows)
-        db.run("UPDATE users SET password = ? WHERE email = ?", [hashed, "family@example.com"]);
-        db.run("UPDATE users SET password = ? WHERE email = ?", [hashed, "maria@example.com"]);
-
-        // After users are present/updated, create job and payments
-        db.get("SELECT id FROM users WHERE email = ?", ["family@example.com"], (err, familyRow) => {
-          db.get("SELECT id FROM users WHERE email = ?", ["maria@example.com"], (err, helperRow) => {
-            if (!familyRow || !helperRow) return;
-            db.run(
-              `INSERT INTO jobs (title, description, location, date, time, duration, payPerHour, category, familyId, status) 
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-              ["Housekeeping", "Light cleaning and laundry", "Home", "2026-01-12", "09:00", "6", "200", "Housekeeping", familyRow.id, "closed"],
-              function (err) {
-                if (err) return;
-                const jobId = this.lastID;
-                // Pending payment
-                db.run(
-                  "INSERT INTO payments (familyId, helperId, jobId, hoursWorked, rate, amount, status, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                  [familyRow.id, helperRow.id, jobId, 18, 200, 18*200, "pending", new Date().toISOString()]
-                );
-                // Paid payment
-                db.run(
-                  "INSERT INTO payments (familyId, helperId, jobId, hoursWorked, rate, amount, status, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                  [familyRow.id, helperRow.id, jobId, 24, 200, 24*200, "paid", new Date().toISOString()]
-                );
-              }
-            );
-          });
-        });
-      }).catch((e) => {
-        // If bcrypt import fails, fall back to plain text (best-effort)
-        db.run(
-          "INSERT OR IGNORE INTO users (name,email,password,role) VALUES (?,?,?,?)",
-          ["Demo Family", "family@example.com", "password", "family"]
-        );
-        db.run(
-          "INSERT OR IGNORE INTO users (name,email,password,role) VALUES (?,?,?,?)",
-          ["Maria", "maria@example.com", "password", "helper"]
-        );
-
-        db.get("SELECT id FROM users WHERE email = ?", ["family@example.com"], (err, familyRow) => {
-          db.get("SELECT id FROM users WHERE email = ?", ["maria@example.com"], (err, helperRow) => {
-            if (!familyRow || !helperRow) return;
-            db.run(
-              `INSERT INTO jobs (title, description, location, date, time, duration, payPerHour, category, familyId, status) 
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-              ["Housekeeping", "Light cleaning and laundry", "Home", "2026-01-12", "09:00", "6", "200", "Housekeeping", familyRow.id, "closed"],
-              function (err) {
-                if (err) return;
-                const jobId = this.lastID;
-                // Pending payment
-                db.run(
-                  "INSERT INTO payments (familyId, helperId, jobId, hoursWorked, rate, amount, status, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                  [familyRow.id, helperRow.id, jobId, 18, 200, 18*200, "pending", new Date().toISOString()]
-                );
-                // Paid payment
-                db.run(
-                  "INSERT INTO payments (familyId, helperId, jobId, hoursWorked, rate, amount, status, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                  [familyRow.id, helperRow.id, jobId, 24, 200, 24*200, "paid", new Date().toISOString()]
-                );
-              }
-            );
-          });
-        });
-      });
-    }
-  });
-
-  // One-off: if demo users exist with plaintext 'password', hash and update them so login works
-  db.get("SELECT password FROM users WHERE email = ?", ["family@example.com"], (err, row) => {
-    if (row && row.password === 'password') {
-      import('bcryptjs').then((bcrypt) => {
-        const hashed = bcrypt.default.hashSync('password', 10);
-        db.run("UPDATE users SET password = ? WHERE email = ?", [hashed, "family@example.com"]);
-      }).catch(() => {});
-    }
-  });
-
-  db.get("SELECT password FROM users WHERE email = ?", ["maria@example.com"], (err, row) => {
-    if (row && row.password === 'password') {
-      import('bcryptjs').then((bcrypt) => {
-        const hashed = bcrypt.default.hashSync('password', 10);
-        db.run("UPDATE users SET password = ? WHERE email = ?", [hashed, "maria@example.com"]);
-      }).catch(() => {});
-    }
-  });
+  // Followers table: who follows which author (helper)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS followers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      authorId INTEGER,
+      followerId INTEGER,
+      createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(authorId, followerId),
+      FOREIGN KEY (authorId) REFERENCES users(id),
+      FOREIGN KEY (followerId) REFERENCES users(id)
+    )
+  `);
 
 });
+

@@ -60,7 +60,7 @@ export default function FamilyProfile() {
     <div>
       <h1 className="text-3xl font-bold mb-6">Profile</h1>
 
-      <div className="bg-white p-6 rounded shadow mb-6">
+      <div className="bg-white p-6 rounded-2xl border mb-6">
         <div className="flex gap-6">
           <div>
             <img src={user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=profile"} className="w-32 h-32 rounded-full border" alt="avatar" />
@@ -93,13 +93,13 @@ export default function FamilyProfile() {
             </div>
 
             <div className="mt-4">
-              <button disabled={loading} onClick={handleSave} className="bg-blue-600 text-white px-4 py-2 rounded">{loading ? 'Saving...' : 'Save Profile'}</button>
+              <button disabled={loading} onClick={handleSave} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium transition-all">{loading ? 'Saving...' : 'Save Profile'}</button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded shadow">
+      <div className="bg-white p-6 rounded-2xl border">
         <h2 className="text-xl font-semibold mb-4">Assigned Helpers</h2>
         {assigned.length === 0 && <p className="text-gray-600">No helpers assigned yet.</p>}
         {assigned.map(a=> (

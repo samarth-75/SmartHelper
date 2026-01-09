@@ -11,7 +11,6 @@ export default function FamilyDashboard() {
 
   useEffect(() => {
     API.get('/auth/profile').then((res) => setProfile(res.data)).catch(() => setProfile(null));
-    // Try backend posts, fallback to local postsService
     import('../../services/api').then(({ getPosts }) => {
       getPosts().then((rows) => setPosts(rows)).catch(() => setPosts(postsService.getPosts()));
     }).catch(() => setPosts(postsService.getPosts()));
@@ -53,12 +52,7 @@ export default function FamilyDashboard() {
           )}
 
           {posts.map((p) => (
-            <PostCard 
-              key={p.id} 
-              post={p} 
-              currentUser={profile} 
-              onFollowChange={() => refresh()}
-            />
+            <PostCard key={p.id} post={p} currentUser={profile} onFollowChange={() => refresh()} />
           ))}
         </div>
       </div>

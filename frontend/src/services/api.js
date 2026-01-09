@@ -18,6 +18,7 @@ export const markPaymentReceived = (paymentId) => API.post(`/payments/${paymentI
 export const submitReview = (payload) => API.post("/reviews", payload).then((res) => res.data);
 export const getFamilyReviews = () => API.get("/reviews/family").then((res) => res.data);
 export const getHelperReviews = () => API.get("/reviews/helper").then((res) => res.data);
+export const getHelperRating = (helperId) => API.get(`/reviews/helper/${helperId}`).then((res) => res.data);
 
 // Family: assigned helpers
 export const getFamilyAssignedHelpers = () => API.get('/auth/family/assigned-helpers').then((res) => res.data);
@@ -31,5 +32,12 @@ export const getHelperApplications = () => API.get('/applications/helper').then(
 
 // Chatbase: obtain a short-lived identity token for the currently authenticated user
 export const getChatbaseToken = () => API.get('/auth/chatbase-token').then((res) => res.data);
+
+// Posts
+export const getPosts = () => API.get('/posts').then((res) => res.data);
+export const createPost = (payload) => API.post('/posts', payload).then((res) => res.data);
+export const toggleFollow = (authorId) => API.post(`/posts/${authorId}/follow`).then((res) => res.data);
+export const deletePost = (postId) => API.delete(`/posts/${postId}`).then((res) => res.data);
+export const getFollowerCount = () => API.get('/posts/follower-count').then((res) => res.data);
 
 export default API;

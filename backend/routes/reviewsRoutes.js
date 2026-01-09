@@ -113,4 +113,15 @@ router.get("/helper", protect, (req, res) => {
   });
 });
 
+/* Get a specific helper's rating summary by ID */
+router.get("/helper/:helperId", (req, res) => {
+  const helperId = Number(req.params.helperId);
+  const summaryQ = `SELECT AVG(rating) AS avgRating, COUNT(*) AS total FROM reviews WHERE helperId = ?`;
+
+  db.get(summaryQ, [helperId], (err, summary) => {
+    if (err) return res.status(500).json(err);
+    res.json({ avgRating: summary?.avgRating || 0, total: summary?.total || 0 });
+  });
+});
+
 export default router;

@@ -9,11 +9,16 @@ export default function HelperProfile() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [assigned, setAssigned] = useState([]);
+  const [followers, setFollowers] = useState(0);
 
   useEffect(() => {
     if (user) {
       setForm({ name: user.name || "", phone: user.phone || "", address: user.address || "", bio: user.bio || "" });
       API.get("/auth/helper/assigned-jobs").then((res) => setAssigned(res.data)).catch(() => setAssigned([]));
+      // Fetch followers count from backend
+      import('../../services/api').then(({ getFollowerCount }) => {
+        getFollowerCount().then((res) => setFollowers(res.count || 0)).catch(() => setFollowers(0));
+      }).catch(() => setFollowers(0));
     }
   }, [user]);
 
@@ -60,11 +65,12 @@ export default function HelperProfile() {
     <div>
       <h1 className="text-3xl font-bold mb-6">Profile</h1>
 
-      <div className="bg-white p-6 rounded shadow mb-6">
+      <div className="bg-white p-6 rounded-2xl border mb-6">
         <div className="flex gap-6">
           <div>
             <img src={user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=profile"} className="w-32 h-32 rounded-full border" alt="avatar" />
-            <div className="mt-3">
+            <div className="mt-3 text-center">
+              <div className="text-sm font-semibold text-gray-700 mb-2"><span className="text-2xl font-bold text-blue-600">{followers}</span> followers {followers >= 100 && '✔️'}</div>
               <label className="relative">
                 <input 
                   type="file" 
@@ -93,13 +99,13 @@ export default function HelperProfile() {
             </div>
 
             <div className="mt-4">
-              <button disabled={loading} onClick={handleSave} className="bg-blue-600 text-white px-4 py-2 rounded">{loading ? 'Saving...' : 'Save Profile'}</button>
+              <button disabled={loading} onClick={handleSave} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium transition-all">{loading ? 'Saving...' : 'Save Profile'}</button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded shadow">
+      <div className="bg-white p-6 rounded-2xl border">
         <h2 className="text-xl font-semibold mb-4">Assigned Jobs</h2>
         {assigned.length === 0 && <p className="text-gray-600">No jobs assigned yet.</p>}
         {assigned.map(j=> (
