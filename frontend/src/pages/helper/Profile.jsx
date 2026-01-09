@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import API from "../../services/api";
 import { useApp } from "../../context/AppContext";
+import { uploadToCloudinary } from "../../utils/cloudinary";
 
 export default function HelperProfile() {
   const { user, login } = useApp();
   const [form, setForm] = useState({ name: "", phone: "", address: "", bio: "" });
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [assigned, setAssigned] = useState([]);
 
   useEffect(() => {
@@ -29,6 +31,31 @@ export default function HelperProfile() {
     }
   };
 
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      const result = await uploadToCloudinary(file);
+
+      if (result.success) {
+        // Update form with new avatar URL
+        const updatedForm = { ...form };
+        const res = await API.put("/auth/profile", { ...updatedForm, avatar: result.url });
+        login(res.data);
+        alert("Avatar uploaded successfully");
+      } else {
+        alert("Failed to upload avatar: " + result.error);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error uploading avatar");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div>
       <h1 className="text-3xl font-bold mb-6">Profile</h1>
@@ -37,7 +64,24 @@ export default function HelperProfile() {
         <div className="flex gap-6">
           <div>
             <img src={user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=profile"} className="w-32 h-32 rounded-full border" alt="avatar" />
-            <p className="text-sm text-gray-500 mt-2">Avatar upload is disabled for now.</p>
+            <div className="mt-3">
+              <label className="relative">
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleAvatarUpload} 
+                  disabled={uploading}
+                  className="hidden" 
+                />
+                <button 
+                  disabled={uploading}
+                  className="text-sm bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 disabled:bg-gray-400 cursor-pointer"
+                  onClick={(e) => e.currentTarget.parentElement.querySelector('input').click()}
+                >
+                  {uploading ? "Uploading..." : "Upload Photo"}
+                </button>
+              </label>
+            </div>
           </div>
 
           <div className="flex-1">
