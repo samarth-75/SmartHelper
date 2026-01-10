@@ -1,18 +1,8 @@
-import { Pool } from 'pg';
-import dotenv from 'dotenv';
+// Postgres support was removed per the current project plan.
+// This file is intentionally a no-op placeholder to avoid runtime errors
+// if it is imported accidentally. Restore from git history to re-enable.
 
-dotenv.config();
+export const pool = null;
+export const query = () => { throw new Error('Postgres disabled. Restore config/pg.js from git if you need it.'); };
 
-const options = {
-  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/smarthelper'
-};
-
-// When using managed Postgres (Heroku/Render) with self-signed certs
-if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL && !process.env.PGSSLMODE) {
-  options.ssl = { rejectUnauthorized: false };
-}
-
-export const pool = new Pool(options);
-export const query = (text, params) => pool.query(text, params);
-
-export default pool;
+export default null;
