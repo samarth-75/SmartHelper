@@ -13,16 +13,16 @@ export default function PaymentCard({ payment, onPay }) {
         </div>
         <div className="text-right">
           <div className="text-lg font-bold">₹{amount}</div>
-          {status === "pending" ? (
+          {status === "pending" && amount > 0 ? (
             <button
               className="mt-2 bg-gradient-to-r from-yellow-400 to-yellow-500 px-3 py-1 rounded text-sm font-semibold"
               onClick={onPay}
             >
               Pay Now
             </button>
-          ) : (
+          ) : status === 'paid' ? (
             <div className="text-green-600 font-semibold">Paid</div>
-          )}
+          ) : null} 
         </div>
       </div>
     </div>

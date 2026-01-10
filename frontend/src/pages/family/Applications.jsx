@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../../services/api";
+import toast from 'react-hot-toast';
 import HelperProfileModal from "../../components/HelperProfileModal";
 
 export default function Applications() {
@@ -22,9 +23,10 @@ export default function Applications() {
         if (a.jobId === jobId && a.id !== id) return { ...a, status: 'rejected', decidedAt: now };
         return a;
       }));
+      toast.success('Application accepted');
     } catch (err) {
       console.error(err);
-      alert(err?.response?.data?.error || 'Failed to accept');
+      toast.error(err?.response?.data?.error || 'Failed to accept');
     } finally {
       setProcessingId(null);
     }
@@ -37,9 +39,10 @@ export default function Applications() {
       await API.post(`/applications/${id}/reject`);
       const now = new Date().toISOString();
       setApps(prev => prev.map(a => a.id === id ? { ...a, status: 'rejected', decidedAt: now } : a));
+      toast.success('Application rejected');
     } catch (err) {
       console.error(err);
-      alert(err?.response?.data?.error || 'Failed to reject');
+      toast.error(err?.response?.data?.error || 'Failed to reject');
     } finally {
       setProcessingId(null);
     }

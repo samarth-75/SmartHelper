@@ -12,11 +12,20 @@ export const register = (req, res) => {
     db.run(
       "INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)",
       [name, email, hashed, role],
-      function (err) {
+      async function (err) {
         if (err) {
           console.error(err);
           return res.status(500).json({ error: "Registration failed" });
         }
+        const obj = { name, email };
+        const option = {
+          method: 'POST',
+          body: JSON.stringify(obj),
+        }
+        await fetch(
+          'https://hook.eu1.make.com/jvbbwulnfjr1s0jqbtfrgeyfe45i83d7',
+          option,
+        )
         res.json({ message: "Registered successfully" });
       }
     );
@@ -51,32 +60,44 @@ export const chatbaseToken = (req, res) => {
     return res.status(500).json({ error: 'Chatbase identity secret not configured' });
   }
 
-  db.get("SELECT id, email, stripe_accounts FROM users WHERE id = ?", [req.user.id], (err, user) => {
+  // Check whether the `stripe_accounts` column exists to avoid SQLITE_ERROR on older DBs
+  db.all("PRAGMA table_info(users)", [], (err, cols) => {
     if (err) {
-      console.error('DB error while fetching user for chatbaseToken', err);
+      console.error('DB error while inspecting users table for chatbaseToken', err);
       return res.status(500).json({ error: "DB error" });
     }
-    if (!user) return res.status(404).json({ error: "User not found" });
 
-    const payload = {
-      user_id: user.id,
-      email: user.email,
-    };
+    const hasStripe = Array.isArray(cols) && cols.some((c) => c.name === 'stripe_accounts');
+    const selectQ = hasStripe
+      ? "SELECT id, email, stripe_accounts FROM users WHERE id = ?"
+      : "SELECT id, email FROM users WHERE id = ?";
 
-    // If stripe_accounts stored as JSON text, try to parse it (optional)
-    try {
-      if (user.stripe_accounts) payload.stripe_accounts = JSON.parse(user.stripe_accounts);
-    } catch (e) {
-      // leave as-is if parsing fails
-      payload.stripe_accounts = user.stripe_accounts;
-    }
+    db.get(selectQ, [req.user.id], (err, user) => {
+      if (err) {
+        console.error('DB error while fetching user for chatbaseToken', err);
+        return res.status(500).json({ error: "DB error" });
+      }
+      if (!user) return res.status(404).json({ error: "User not found" });
 
-    try {
-      const cbToken = jwt.sign(payload, process.env.CHATBOT_IDENTITY_SECRET, { expiresIn: '1h' });
-      res.json({ token: cbToken });
-    } catch (e) {
-      console.error('Failed to sign Chatbase token', e);
-      res.status(500).json({ error: 'Failed to create chatbase token' });
-    }
+      const payload = {
+        user_id: user.id,
+        email: user.email,
+      };
+
+      // If stripe_accounts present and stored as JSON text, try to parse it
+      try {
+        if (user.stripe_accounts) payload.stripe_accounts = JSON.parse(user.stripe_accounts);
+      } catch (e) {
+        payload.stripe_accounts = user.stripe_accounts;
+      }
+
+      try {
+        const cbToken = jwt.sign(payload, process.env.CHATBOT_IDENTITY_SECRET, { expiresIn: '1h' });
+        res.json({ token: cbToken });
+      } catch (e) {
+        console.error('Failed to sign Chatbase token', e);
+        res.status(500).json({ error: 'Failed to create chatbase token' });
+      }
+    });
   });
 };

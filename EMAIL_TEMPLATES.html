@@ -1,0 +1,177 @@
+<!-- 
+SMARTHELPER EMAIL TEMPLATES FOR MAKE.COM
+Copy these HTML templates directly into your Make.com email module
+Use conditional routing based on {{payload.status}} to send the appropriate template
+-->
+
+<!-- ================================================================
+     ACCEPTANCE EMAIL TEMPLATE
+     Use this when: {{payload.status}} == "accepted"
+     ================================================================ -->
+
+<div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f5f5f5; padding: 20px; max-width: 600px; margin: 0 auto;">
+  
+  <!-- Header with gradient -->
+  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 20px; text-align: center; border-radius: 12px 12px 0 0;">
+    <h1 style="margin: 0; font-size: 32px; font-weight: 700;">🎉</h1>
+    <h2 style="margin: 15px 0 5px 0; font-size: 28px; font-weight: 700;">Congratulations!</h2>
+    <p style="margin: 0; font-size: 16px; font-weight: 300; opacity: 0.95;">Your Application Has Been Accepted</p>
+  </div>
+
+  <!-- Main content -->
+  <div style="background: white; padding: 40px; text-align: left;">
+    
+    <p style="margin: 0 0 20px 0; font-size: 16px; color: #333; line-height: 1.6;">
+      Hi <strong style="color: #667eea;">{{payload.helperName}}</strong>,
+    </p>
+
+    <p style="margin: 0 0 30px 0; font-size: 15px; color: #555; line-height: 1.8;">
+      {{payload.message}}
+    </p>
+
+    <!-- Job Details Box -->
+    <div style="background: linear-gradient(135deg, #f5f7fa 0%, #f0f3fa 100%); border-left: 5px solid #667eea; padding: 20px; margin: 30px 0; border-radius: 8px;">
+      <h3 style="margin: 0 0 20px 0; font-size: 18px; color: #333; font-weight: 600;">📋 Job Details</h3>
+      
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 10px 0; font-size: 14px; color: #666; font-weight: 500; width: 120px;">👥 Family:</td>
+          <td style="padding: 10px 0; font-size: 14px; color: #333; font-weight: 600;">{{payload.familyName}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 0; font-size: 14px; color: #666; font-weight: 500;">💼 Job Title:</td>
+          <td style="padding: 10px 0; font-size: 14px; color: #333; font-weight: 600;">{{payload.jobTitle}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 0; font-size: 14px; color: #666; font-weight: 500;">📍 Location:</td>
+          <td style="padding: 10px 0; font-size: 14px; color: #333; font-weight: 600;">{{payload.jobLocation}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 0; font-size: 14px; color: #666; font-weight: 500;">📅 Date:</td>
+          <td style="padding: 10px 0; font-size: 14px; color: #333; font-weight: 600;">{{payload.jobDate}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 0; font-size: 14px; color: #666; font-weight: 500;">🕐 Time:</td>
+          <td style="padding: 10px 0; font-size: 14px; color: #333; font-weight: 600;">{{payload.jobTime}} onwards</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 0; font-size: 14px; color: #666; font-weight: 500;">💰 Rate:</td>
+          <td style="padding: 10px 0; font-size: 14px; color: #667eea; font-weight: 700; font-size: 16px;">Rs {{payload.payPerHour}}/hour</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- CTA -->
+    <div style="background: #f0f3fa; padding: 20px; border-radius: 8px; text-align: center; margin: 30px 0;">
+      <p style="margin: 0; font-size: 14px; color: #555; line-height: 1.8;">
+        Please check the <strong>SmartHelper app</strong> for more details and to confirm your availability.
+      </p>
+    </div>
+
+    <!-- Next Steps -->
+    <div style="background: #fff9e6; border-left: 5px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 8px;">
+      <p style="margin: 0; font-size: 13px; color: #856404;">
+        <strong>✓ Next Steps:</strong> Review the job details and confirm your availability in the SmartHelper app. The family will be waiting for your confirmation!
+      </p>
+    </div>
+
+    <p style="margin: 30px 0 0 0; font-size: 14px; color: #888; line-height: 1.6;">
+      Best regards,<br>
+      <strong>The SmartHelper Team</strong>
+    </p>
+  </div>
+
+  <!-- Footer -->
+  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; text-align: center; border-radius: 0 0 12px 12px; font-size: 12px;">
+    <p style="margin: 0 0 8px 0;">SmartHelper - Connecting Families with Trusted Helpers</p>
+    <p style="margin: 0; opacity: 0.85;">© 2026 SmartHelper. All Rights Reserved.</p>
+  </div>
+
+</div>
+
+
+<!-- ================================================================
+     REJECTION EMAIL TEMPLATE
+     Use this when: {{payload.status}} == "rejected"
+     ================================================================ -->
+
+<div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f5f5f5; padding: 20px; max-width: 600px; margin: 0 auto;">
+  
+  <!-- Header with gradient -->
+  <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 40px 20px; text-align: center; border-radius: 12px 12px 0 0;">
+    <h1 style="margin: 0; font-size: 32px;">📢</h1>
+    <h2 style="margin: 15px 0 5px 0; font-size: 28px; font-weight: 700;">Application Update</h2>
+    <p style="margin: 0; font-size: 16px; font-weight: 300; opacity: 0.95;">We've Made a Decision</p>
+  </div>
+
+  <!-- Main content -->
+  <div style="background: white; padding: 40px; text-align: left;">
+    
+    <p style="margin: 0 0 20px 0; font-size: 16px; color: #333; line-height: 1.6;">
+      Hi <strong style="color: #f5576c;">{{payload.helperName}}</strong>,
+    </p>
+
+    <p style="margin: 0 0 30px 0; font-size: 15px; color: #555; line-height: 1.8;">
+      {{payload.message}}
+    </p>
+
+    <!-- Job Details Box -->
+    <div style="background: linear-gradient(135deg, #fef5f7 0%, #fef1f5 100%); border-left: 5px solid #f5576c; padding: 20px; margin: 30px 0; border-radius: 8px;">
+      <h3 style="margin: 0 0 20px 0; font-size: 18px; color: #333; font-weight: 600;">📋 About the Job</h3>
+      
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 10px 0; font-size: 14px; color: #666; font-weight: 500; width: 120px;">👥 Family:</td>
+          <td style="padding: 10px 0; font-size: 14px; color: #333; font-weight: 600;">{{payload.familyName}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 0; font-size: 14px; color: #666; font-weight: 500;">💼 Job Title:</td>
+          <td style="padding: 10px 0; font-size: 14px; color: #333; font-weight: 600;">{{payload.jobTitle}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 0; font-size: 14px; color: #666; font-weight: 500;">📍 Location:</td>
+          <td style="padding: 10px 0; font-size: 14px; color: #333; font-weight: 600;">{{payload.jobLocation}}</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Encouragement Box -->
+    <div style="background: linear-gradient(135deg, #fff9e6 0%, #fffbf0 100%); border-left: 5px solid #ffc107; padding: 20px; margin: 30px 0; border-radius: 8px;">
+      <p style="margin: 0; font-size: 15px; color: #856404; line-height: 1.8;">
+        <strong>💡 Don't Get Discouraged!</strong><br>
+        Every helper has different strengths. This was just one opportunity. There are many more jobs waiting for you on SmartHelper. Keep applying, improve your profile with reviews, and showcase your skills!
+      </p>
+    </div>
+
+    <!-- Tips for Success -->
+    <div style="background: #f0f3fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+      <h4 style="margin: 0 0 15px 0; font-size: 14px; color: #333; font-weight: 600;">📈 Tips to Improve Your Chances:</h4>
+      <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #555;">
+        <li style="margin: 8px 0; line-height: 1.6;">Complete your profile with a professional photo</li>
+        <li style="margin: 8px 0; line-height: 1.6;">Add a detailed bio about your experience</li>
+        <li style="margin: 8px 0; line-height: 1.6;">Apply for jobs that match your skills</li>
+        <li style="margin: 8px 0; line-height: 1.6;">Share your work on SmartHelper Posts to gain followers</li>
+        <li style="margin: 8px 0; line-height: 1.6;">Build your rating through successfully completed jobs</li>
+      </ul>
+    </div>
+
+    <!-- Next Action -->
+    <div style="text-align: center; margin: 30px 0; padding: 20px; background: #e8f5e9; border-radius: 8px;">
+      <p style="margin: 0; font-size: 14px; color: #2e7d32; font-weight: 500;">
+        🔍 Browse more job opportunities in the SmartHelper app now!
+      </p>
+    </div>
+
+    <p style="margin: 30px 0 0 0; font-size: 14px; color: #888; line-height: 1.6;">
+      Best wishes,<br>
+      <strong>The SmartHelper Team</strong>
+    </p>
+  </div>
+
+  <!-- Footer -->
+  <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 25px; text-align: center; border-radius: 0 0 12px 12px; font-size: 12px;">
+    <p style="margin: 0 0 8px 0;">SmartHelper - Connecting Families with Trusted Helpers</p>
+    <p style="margin: 0; opacity: 0.85;">© 2026 SmartHelper. All Rights Reserved.</p>
+  </div>
+
+</div>

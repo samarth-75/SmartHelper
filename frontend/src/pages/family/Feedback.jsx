@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import toast from 'react-hot-toast';
 import Sidebar from "../../components/Sidebar";
 import { getFamilyReviews, submitReview } from "../../services/api";
 
@@ -52,7 +53,7 @@ export default function Feedback() {
       await submitReview({ jobId, helperId, rating, comment });
       await fetch();
     } catch (e) {
-      alert(e?.response?.data?.error || 'Failed to submit review');
+      toast.error(e?.response?.data?.error || 'Failed to submit review');
     } finally {
       setSubmitting((s) => ({ ...s, [jobId]: false }));
     }

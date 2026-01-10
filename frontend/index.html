@@ -15,7 +15,7 @@
     <script>
     (function(){
       if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}
-      const EMBED_ID = "tMC2J6Hnt_DgxNliAEkPd"; // <-- replace this with your real embed id
+      const EMBED_ID = "BcNwnApRRaUIsJk3LNKrh"; // <-- replace this with your real embed id
       const onLoad=function(){
         if (EMBED_ID === 'YOUR_EMBED_ID') {
           console.warn('Chatbase embed id is not set. Replace "YOUR_EMBED_ID" in frontend/index.html with your embed id to display the widget. Skipping script injection.');

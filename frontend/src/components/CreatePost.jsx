@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import { uploadToCloudinary } from '../utils/cloudinary';
 import postsService from '../services/postsService';
 import API, { createPost as apiCreatePost } from '../services/api';
@@ -16,7 +17,7 @@ export default function CreatePost({ profile, onCreated }) {
   };
 
   const submit = async () => {
-    if (!profile) return alert('Profile missing');
+    if (!profile) { toast.error('Profile missing'); return; }
     setLoading(true);
     try {
       let imageUrl = null;
@@ -55,7 +56,7 @@ export default function CreatePost({ profile, onCreated }) {
       }
     } catch (err) {
       console.error(err);
-      alert(err.message || 'Failed to create post');
+      toast.error(err.message || 'Failed to create post');
     } finally {
       setLoading(false);
     }

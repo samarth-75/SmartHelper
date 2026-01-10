@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera, CameraOff, CheckCircle2, XCircle, Scan } from "lucide-react";
+import toast from 'react-hot-toast';
 import API from "../../services/api";
 
 export default function AttendancePage() {
@@ -156,24 +157,24 @@ export default function AttendancePage() {
 
   const handleRegister = async () => {
     const image = captureImage();
-    if (!image) return alert('Unable to capture image');
+    if (!image) { toast.error('Unable to capture image'); return; }
     try {
       setScanning(true);
       await API.post('/attendance/register-face', { image });
       setFaceRegistered(true);
-      alert('Face registered successfully');
+      toast.success('Face registered successfully');
     } catch (err) {
       console.error(err);
-      alert(err?.response?.data?.error || 'Registration failed');
+      toast.error(err?.response?.data?.error || 'Registration failed');
     } finally {
       setScanning(false);
     }
   };
 
   const handleScan = async (action) => {
-    if (!faceRegistered) return alert('Please register your face first');
+    if (!faceRegistered) { toast.error('Please register your face first'); return; }
     const image = captureImage();
-    if (!image) return alert('Unable to capture image');
+    if (!image) { toast.error('Unable to capture image'); return; }
 
     setScanning(true);
     setVerified(null);
@@ -188,14 +189,14 @@ export default function AttendancePage() {
       } catch (err) {
         console.error(err);
         setVerified(false);
-        alert(err?.response?.data?.error || 'Verification failed');
+        toast.error(err?.response?.data?.error || 'Verification failed');
       } finally {
         setScanning(false);
         setTimeout(()=>setVerified(null), 2000);
       }
     }, (err) => {
       console.error('Location error', err);
-      alert('Location access is required to mark attendance');
+      toast.error('Location access is required to mark attendance');
       setScanning(false);
     });
   }; 

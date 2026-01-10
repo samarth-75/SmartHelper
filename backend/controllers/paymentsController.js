@@ -158,7 +158,11 @@ export const getFamilyPayments = (req, res) => {
           };
         });
 
-        res.json({ pending, paid });
+        // Remove zero-amount payments from both pending and paid lists
+        const filteredPending = pending.filter(p => p.amount && p.amount > 0);
+        const filteredPaid = paid.filter(p => p.amount && p.amount > 0);
+
+        res.json({ pending: filteredPending, paid: filteredPaid });
       });
     }
   );
@@ -211,7 +215,11 @@ export const getHelperPayments = (req, res) => {
             };
           });
 
-          res.json({ pending, paid });
+          // Filter out zero-amounts
+          const filteredPending = pending.filter(p => p.amount && p.amount > 0);
+          const filteredPaid = paid.filter(p => p.amount && p.amount > 0);
+
+          res.json({ pending: filteredPending, paid: filteredPaid });
         }
       );
     }

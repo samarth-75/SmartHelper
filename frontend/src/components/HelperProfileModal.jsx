@@ -10,15 +10,19 @@ export default function HelperProfileModal({ helperId, onClose }) {
   useEffect(() => {
     const fetchHelper = async () => {
       try {
-        // Fetch helper details
+        // Fetch helper details (family helpers endpoint returns avgRating as well)
         const res = await API.get(`/auth/helpers`);
         const helpers = res.data;
         const found = helpers.find(h => h.id === helperId);
         setHelper(found || null);
 
-        // Fetch helper rating
-        const ratingRes = await getHelperRating(helperId);
-        setRating(ratingRes);
+        // Fetch helper rating summary; if there are no reviews but `found` includes avgRating, use that as a fallback
+        const ratingRes = await getHelperRating(helperId).catch(() => null);
+        let finalRating = ratingRes || { avgRating: 0, total: 0 };
+        if ((finalRating.total === 0 || !finalRating) && found && typeof found.avgRating !== 'undefined') {
+          finalRating = { avgRating: found.avgRating || 0, total: found.avgRating > 0 ? 1 : 0 };
+        }
+        setRating(finalRating);
       } catch (err) {
         console.error('Failed to fetch helper:', err);
       } finally {
@@ -50,7 +54,7 @@ export default function HelperProfileModal({ helperId, onClose }) {
     );
   }
 
-  const avgRating = parseFloat(rating.avgRating).toFixed(1);
+  const avgRating = rating.total === 0 ? 'No reviews' : parseFloat(rating.avgRating).toFixed(1);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

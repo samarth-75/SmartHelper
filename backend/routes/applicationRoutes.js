@@ -67,32 +67,66 @@ router.post("/:id/accept", protect, (req, res) => {
 
   const appId = req.params.id;
 
-  db.get(`SELECT jobId, helperId, status FROM applications WHERE id = ?`, [appId], (err, app) => {
-    if (err) return res.status(500).json(err);
-    if (!app) return res.status(404).json({ error: "Application not found" });
-
-    db.get(`SELECT familyId, assignedHelperId FROM jobs WHERE id = ?`, [app.jobId], (err, job) => {
+  db.get(
+    `SELECT a.jobId, a.helperId, a.status, 
+            u.email AS helperEmail, u.name AS helperName,
+            j.title AS jobTitle, j.location, j.date, j.time, j.payPerHour,
+            f.name AS familyName, f.email AS familyEmail
+     FROM applications a
+     JOIN users u ON a.helperId = u.id
+     JOIN jobs j ON a.jobId = j.id
+     JOIN users f ON j.familyId = f.id
+     WHERE a.id = ?`,
+    [appId],
+    (err, app) => {
       if (err) return res.status(500).json(err);
-      if (!job) return res.status(404).json({ error: "Job not found" });
-      if (job.familyId !== req.user.id) return res.status(403).json({ error: "Not authorized" });
-      if (job.assignedHelperId) return res.status(400).json({ error: "Job already assigned" });
+      if (!app) return res.status(404).json({ error: "Application not found" });
 
-      const now = new Date().toISOString();
-
-      db.run(`UPDATE applications SET status = 'accepted', decidedAt = ? WHERE id = ?`, [now, appId], function (err) {
+      db.get(`SELECT familyId, assignedHelperId FROM jobs WHERE id = ?`, [app.jobId], (err, job) => {
         if (err) return res.status(500).json(err);
+        if (!job) return res.status(404).json({ error: "Job not found" });
+        if (job.familyId !== req.user.id) return res.status(403).json({ error: "Not authorized" });
+        if (job.assignedHelperId) return res.status(400).json({ error: "Job already assigned" });
 
-        db.run(`UPDATE jobs SET assignedHelperId = ?, status = 'assigned' WHERE id = ?`, [app.helperId, app.jobId], function (err) {
+        const now = new Date().toISOString();
+
+        db.run(`UPDATE applications SET status = 'accepted', decidedAt = ? WHERE id = ?`, [now, appId], function (err) {
           if (err) return res.status(500).json(err);
 
-          db.run(`UPDATE applications SET status = 'rejected', decidedAt = ? WHERE jobId = ? AND id != ? AND status = 'pending'`, [now, app.jobId, appId], function (err) {
+          db.run(`UPDATE jobs SET assignedHelperId = ?, status = 'assigned' WHERE id = ?`, [app.helperId, app.jobId], function (err) {
             if (err) return res.status(500).json(err);
-            res.json({ accepted: true });
+
+             db.run(`UPDATE applications SET status = 'rejected', decidedAt = ? WHERE jobId = ? AND id != ? AND status = 'pending'`, [now, app.jobId, appId], function (err) {
+              if (err) return res.status(500).json(err);
+              
+              // Send email notification via Make.com webhook
+              const emailData = {
+                helperEmail: app.helperEmail,
+                helperName: app.helperName,
+                familyName: app.familyName,
+                jobTitle: app.jobTitle,
+                jobLocation: app.location,
+                status: 'accepted',
+                subject: `🎉 Application Accepted - ${app.jobTitle}`,
+                message: `Congratulations! Your application has been accepted for the job "${app.jobTitle}". Looking forward to working with you!`
+              };
+
+              (async () => {
+                const obj = emailData;
+                const option = {
+                  method: 'POST',
+                  body: JSON.stringify(obj),
+                };
+                await fetch('https://hook.eu1.make.com/fb793mla7g3uh3j83pnerj987nm4h9qv', option).catch((err) => console.error('Webhook error:', err));
+              })();
+
+              res.json({ accepted: true });
+            });
           });
         });
       });
-    });
-  });
+    }
+  );
 });
 
 
@@ -103,22 +137,56 @@ router.post("/:id/reject", protect, (req, res) => {
 
   const appId = req.params.id;
 
-  db.get(`SELECT jobId, status FROM applications WHERE id = ?`, [appId], (err, app) => {
-    if (err) return res.status(500).json(err);
-    if (!app) return res.status(404).json({ error: "Application not found" });
-
-    db.get(`SELECT familyId FROM jobs WHERE id = ?`, [app.jobId], (err, job) => {
+  db.get(
+    `SELECT a.jobId, a.status,
+            u.email AS helperEmail, u.name AS helperName,
+            j.title AS jobTitle, j.location,
+            f.name AS familyName
+     FROM applications a
+     JOIN users u ON a.helperId = u.id
+     JOIN jobs j ON a.jobId = j.id
+     JOIN users f ON j.familyId = f.id
+     WHERE a.id = ?`,
+    [appId],
+    (err, app) => {
       if (err) return res.status(500).json(err);
-      if (job.familyId !== req.user.id) return res.status(403).json({ error: "Not authorized" });
-      if (app.status === 'rejected') return res.status(400).json({ error: 'Already rejected' });
+      if (!app) return res.status(404).json({ error: "Application not found" });
 
-      const now = new Date().toISOString();
-      db.run(`UPDATE applications SET status = 'rejected', decidedAt = ? WHERE id = ?`, [now, appId], function (err) {
+      db.get(`SELECT familyId FROM jobs WHERE id = ?`, [app.jobId], (err, job) => {
         if (err) return res.status(500).json(err);
-        res.json({ rejected: true });
+        if (job.familyId !== req.user.id) return res.status(403).json({ error: "Not authorized" });
+        if (app.status === 'rejected') return res.status(400).json({ error: 'Already rejected' });
+
+        const now = new Date().toISOString();
+        db.run(`UPDATE applications SET status = 'rejected', decidedAt = ? WHERE id = ?`, [now, appId], function (err) {
+          if (err) return res.status(500).json(err);
+          
+          // Send email notification via Make.com webhook
+          const emailData = {
+            helperEmail: app.helperEmail,
+            helperName: app.helperName,
+            familyName: app.familyName,
+            jobTitle: app.jobTitle,
+            jobLocation: app.location,
+            status: 'rejected',
+            subject: `Application Status Update - ${app.jobTitle}`,
+            message: `Thank you for your interest in the "${app.jobTitle}" job. Unfortunately, the family has selected another helper for this position. Keep applying - there are more opportunities ahead!`
+          };
+
+          (async () => {
+            const obj = emailData;
+            const option = {
+              method: 'POST',
+              body: JSON.stringify(obj),
+            };
+            await fetch('https://hook.eu1.make.com/fb793mla7g3uh3j83pnerj987nm4h9qv', option).catch((err) => console.error('Webhook error:', err));
+          })();
+
+          res.json({ rejected: true });
+        });
       });
-    });
-  });
+    }
+  );
 });
 
 
@@ -127,8 +195,9 @@ router.get("/helper", protect, (req, res) => {
   if (req.user.role !== "helper")
     return res.status(403).json({ error: "Only helpers can view their applications" });
 
+  // Only return pending applications (accepted/rejected applications shouldn't be considered active applies)
   const q = `
-    SELECT jobId FROM applications WHERE helperId = ?
+    SELECT jobId FROM applications WHERE helperId = ? AND status = 'pending'
   `;
 
   db.all(q, [req.user.id], (err, rows) => {

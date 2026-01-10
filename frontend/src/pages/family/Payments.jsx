@@ -75,8 +75,8 @@ export default function Payments() {
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-4">
-              {payments.pending.length === 0 && <div className="text-gray-500">No pending payments</div>}
-              {payments.pending.map((p) => (
+              {payments.pending.filter(p => p.amount && p.amount > 0).length === 0 && <div className="text-gray-500">No pending payments</div>}
+              {payments.pending.filter(p => p.amount && p.amount > 0).map((p) => (
                 <PaymentCard key={p.id || `${p.helperId}-${p.jobId}` } payment={p} onPay={() => onPayClick(p)} />
               ))}
             </div>

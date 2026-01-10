@@ -1,5 +1,6 @@
 import Sidebar from "../../components/Sidebar";
 import { useEffect, useState } from "react";
+import toast from 'react-hot-toast';
 import { getHelperPayments, markPaymentReceived } from "../../services/api";
 
 export default function Earnings() {
@@ -32,7 +33,7 @@ export default function Earnings() {
       await markPaymentReceived(paymentId);
       await fetch();
     } catch (e) {
-      alert(e?.response?.data?.error || 'Failed to mark payment as received');
+      toast.error(e?.response?.data?.error || 'Failed to mark payment as received');
     } finally {
       setReceiving(null);
     }

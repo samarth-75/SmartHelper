@@ -38,6 +38,16 @@ router.post("/", protect, (req, res) => {
 
 /* Get all jobs for helpers */
 router.get("/", protect, (req, res) => {
+  // If the requester is a helper, only return open jobs (filled jobs are not relevant)
+  if (req.user && req.user.role === 'helper') {
+    db.all("SELECT * FROM jobs WHERE status = 'open' ORDER BY date DESC", (err, rows) => {
+      if (err) return res.status(500).json(err);
+      res.json(rows);
+    });
+    return;
+  }
+
+  // Otherwise return all jobs (families/admins)
   db.all("SELECT * FROM jobs", (err, rows) => {
     if (err) return res.status(500).json(err);
     res.json(rows);

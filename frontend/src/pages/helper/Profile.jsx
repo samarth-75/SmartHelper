@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../../services/api";
+import toast from 'react-hot-toast';
 import { useApp } from "../../context/AppContext";
 import { uploadToCloudinary } from "../../utils/cloudinary";
 
@@ -12,25 +13,41 @@ export default function HelperProfile() {
   const [followers, setFollowers] = useState(0);
 
   useEffect(() => {
-    if (user) {
-      setForm({ name: user.name || "", phone: user.phone || "", address: user.address || "", bio: user.bio || "" });
-      API.get("/auth/helper/assigned-jobs").then((res) => setAssigned(res.data)).catch(() => setAssigned([]));
-      // Fetch followers count from backend
-      import('../../services/api').then(({ getFollowerCount }) => {
-        getFollowerCount().then((res) => setFollowers(res.count || 0)).catch(() => setFollowers(0));
-      }).catch(() => setFollowers(0));
-    }
-  }, [user]);
+    let mounted = true;
+
+    // Always fetch the latest profile when this page mounts so values populate immediately
+    API.get('/auth/profile').then((res) => {
+      if (!mounted) return;
+      login(res.data);
+      setForm({ name: res.data.name || "", phone: res.data.phone || "", address: res.data.address || "", bio: res.data.bio || "", avatar: res.data.avatar || "" });
+    }).catch((err) => {
+      // If not authenticated or fetch fails, we still proceed and show empty form
+      console.warn('Could not fetch profile:', err?.message || err);
+    });
+
+    // Load assigned jobs (if any)
+    API.get("/auth/helper/assigned-jobs").then((res) => { if (mounted) setAssigned(res.data); }).catch(() => setAssigned([]));
+
+    // Fetch followers count
+    import('../../services/api').then(({ getFollowerCount }) => {
+      getFollowerCount().then((res) => { if (mounted) setFollowers(res.count || 0); }).catch(() => setFollowers(0));
+    }).catch(() => setFollowers(0));
+
+    return () => { mounted = false; };
+  }, []);
+
+  // Render the page immediately and use `form` values when available
+
 
   const handleSave = async () => {
     try {
       setLoading(true);
       const res = await API.put("/auth/profile", form);
       login(res.data);
-      alert("Profile updated");
+      toast.success("Profile updated");
     } catch (err) {
       console.error(err);
-      alert(err?.response?.data?.error || "Failed to update profile");
+      toast.error(err?.response?.data?.error || "Failed to update profile");
     } finally {
       setLoading(false);
     }
@@ -49,13 +66,13 @@ export default function HelperProfile() {
         const updatedForm = { ...form };
         const res = await API.put("/auth/profile", { ...updatedForm, avatar: result.url });
         login(res.data);
-        alert("Avatar uploaded successfully");
+        toast.success("Avatar uploaded successfully");
       } else {
-        alert("Failed to upload avatar: " + result.error);
+        toast.error("Failed to upload avatar: " + result.error);
       }
     } catch (err) {
       console.error(err);
-      alert("Error uploading avatar");
+      toast.error("Error uploading avatar");
     } finally {
       setUploading(false);
     }

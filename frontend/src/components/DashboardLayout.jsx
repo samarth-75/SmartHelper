@@ -165,9 +165,6 @@ export default function DashboardLayout({ children }) {
             })}
 
             <div className="pt-4 border-t">
-              <Link to={isFamilyDashboard ? "/family/ai-assistant" : "/helper/ai-assistant"} className="flex items-center gap-3 px-4 py-3 rounded-xl text-purple-600 hover:bg-purple-50">
-                <MessageSquare /> AI Assistant
-              </Link>
               <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50">
                 <LogOut /> Logout
               </button>
