@@ -17,7 +17,7 @@ import postsRoutes from "./routes/postsRoutes.js";
 const app = express();
 
 // Simple CORS: set FRONTEND_URL in env to restrict origin; set CORS_ALLOW_ALL=true to allow all
-const FRONTEND_URL = process.env.FRONTEND_URL || "";
+const FRONTEND_URL = process.env.FRONTEND_URL || "https://smart-helper-17eu0a3a1-samarth-75s-projects.vercel.app";
 if (process.env.CORS_ALLOW_ALL === "true" || !FRONTEND_URL) {
   app.use(cors());
 } else {
